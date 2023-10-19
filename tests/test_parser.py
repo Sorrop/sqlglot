@@ -759,3 +759,8 @@ class TestParser(unittest.TestCase):
             error_level=ErrorLevel.IGNORE,
         )
         self.assertEqual(ast[0].sql(), "CONCAT_WS()")
+
+    def test_redshift_temp(self):
+        ast = parse_one("select * from some_table where y = dateadd('month', -1, date_trunc('month', (select x from #temp_table)-1))-1", dialect="redshift")
+
+        self.assertEqual(ast.sql(dialect="redshift"), "SELECT * FROM some_table WHERE y = DATEADD(month, -1, CAST(DATE_TRUNC('month', (SELECT x FROM #temp_table) - 1) AS DATE)) - 1")
